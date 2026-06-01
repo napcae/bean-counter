@@ -1,4 +1,16 @@
-const WEEKS = 12;
+const WEEKS = {
+  mobile: 4,
+  tablet: 8,
+  desktop: 12
+};
+
+function getWeeksForScreen() {
+  const width = window.innerWidth;
+  if (width < 640) return WEEKS.mobile;
+  if (width < 1024) return WEEKS.tablet;
+  return WEEKS.desktop;
+}
+
 const DAYS_PER_WEEK = 7;
 
 async function loadActivities() {
@@ -97,6 +109,7 @@ function renderHeatmap(data, activityName) {
   const currentStreak = getCurrentStreak(data);
   const longestStreak = getLongestStreak(data);
   const totalCount = getTotalCount(data);
+  const weeks = getWeeksForScreen();
 
   const card = document.createElement('div');
   card.className = 'card bg-base-200';
@@ -113,7 +126,7 @@ function renderHeatmap(data, activityName) {
   body.appendChild(title);
 
   const stats = document.createElement('div');
-  stats.className = 'grid grid-cols-3 gap-4 mb-4';
+  stats.className = 'grid grid-cols-3 gap-4 mb-6';
   stats.innerHTML = `
     <div class="stat place-items-center">
       <div class="stat-title text-xs md:text-sm">Total</div>
@@ -130,8 +143,8 @@ function renderHeatmap(data, activityName) {
   `;
   body.appendChild(stats);
 
-  const dates = getDateRange(WEEKS);
-  const monthLabels = getMonthLabels(WEEKS);
+  const dates = getDateRange(weeks);
+  const monthLabels = getMonthLabels(weeks);
 
   const container = document.createElement('div');
   container.className = 'heatmap-container';
@@ -165,7 +178,7 @@ function renderHeatmap(data, activityName) {
     const row = document.createElement('div');
     row.className = 'heatmap-row';
 
-    for (let week = 0; week < WEEKS; week++) {
+    for (let week = 0; week < weeks; week++) {
       const dateIndex = week * DAYS_PER_WEEK + dayOfWeek;
       const date = dates[dateIndex];
       const dateStr = formatDate(date);
@@ -281,3 +294,17 @@ document.addEventListener('click', (e) => {
 
 initTheme();
 init();
+
+let resizeTimeout;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimeout);
+  resizeTimeout = setTimeout(() => {
+    const oldWeeks = getWeeksForScreen();
+    setTimeout(() => {
+      const newWeeks = getWeeksForScreen();
+      if (oldWeeks !== newWeeks) {
+        location.reload();
+      }
+    }, 0);
+  }, 250);
+});
