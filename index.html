@@ -187,6 +187,31 @@
       </div>
 
       <div id="activities-container" class="space-y-4 md:space-y-6"></div>
+
+      <details id="setup-guide" class="mt-8 collapse collapse-arrow border border-base-300">
+        <summary class="collapse-title text-sm font-medium">📖 How to Sync Your Data</summary>
+        <div class="collapse-content text-sm space-y-3">
+          <div>
+            <h3 class="font-semibold mb-2">GitHub Syncing</h3>
+            <ol class="list-decimal list-inside space-y-1 opacity-70 text-xs">
+              <li>Go to Settings → Secrets and variables → Actions</li>
+              <li>Add <code class="bg-base-300 px-1 rounded">GITHUB_USERNAME</code> with your username</li>
+              <li>Add <code class="bg-base-300 px-1 rounded">GH_SYNC_TOKEN</code> with a personal access token from <a href="https://github.com/settings/tokens/new" target="_blank" class="link link-primary">github.com/settings/tokens</a></li>
+              <li>Go to Actions → Sync Activity Data → Run workflow</li>
+            </ol>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-2">Strava Syncing (Optional)</h3>
+            <ol class="list-decimal list-inside space-y-1 opacity-70 text-xs">
+              <li>Create an app at <a href="https://www.strava.com/settings/apps" target="_blank" class="link link-primary">strava.com/settings/apps</a></li>
+              <li>Authorize it: <code class="bg-base-300 px-1 rounded text-xs break-all">https://www.strava.com/oauth/authorize?client_id=YOUR_ID&response_type=code&redirect_uri=http://localhost&scope=activity:read</code></li>
+              <li>Exchange the code for a refresh token</li>
+              <li>Add <code class="bg-base-300 px-1 rounded">STRAVA_TOKEN</code> to your repo secrets</li>
+            </ol>
+          </div>
+          <p class="text-xs opacity-60 pt-2">Data syncs daily via GitHub Actions. See README for detailed instructions.</p>
+        </div>
+      </details>
     </div>
   </div>
 
