@@ -87,7 +87,7 @@ def sync_strava(refresh_token):
         raise ValueError('Strava client credentials not configured')
 
     # Refresh the access token
-    token_url = 'https://www.strava.com/api/v3/oauth/token'
+    token_url = 'https://www.strava.com/oauth/token'
     token_params = {
         'client_id': client_id,
         'client_secret': client_secret,
