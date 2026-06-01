@@ -21,11 +21,13 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Sync GitHub data
+      - name: Sync Activity Data
         env:
           GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
           GITHUB_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
-          STRAVA_TOKEN: ${{ secrets.STRAVA_TOKEN }}
+          STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
+          STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
+          STRAVA_REFRESH_TOKEN: ${{ secrets.STRAVA_REFRESH_TOKEN }}
         run: python sync.py
 
       - name: Commit and push if changed

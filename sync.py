@@ -81,7 +81,7 @@ def sync_strava(refresh_token):
             'refresh_token': refresh_token,
             'grant_type': 'refresh_token'
         }
-        token_response = requests.post(token_url, params=token_params)
+        token_response = requests.post(token_url, data=token_params)
         token_response.raise_for_status()
         access_token = token_response.json()['access_token']
 
