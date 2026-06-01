@@ -57,21 +57,41 @@ def sync_github(username, token):
 
     return activities
 
-def sync_strava(token):
+def sync_strava(refresh_token):
     """Fetch Strava activities for the past 12 weeks."""
-    if not token:
-        print('Skipping Strava sync: token not set')
+    if not refresh_token:
+        print('Skipping Strava sync: refresh token not set')
         return {}
 
     activities = {}
 
-    weeks = 12
-    after = int((datetime.now() - timedelta(days=weeks*7)).timestamp())
+    client_id = os.getenv('STRAVA_CLIENT_ID')
+    client_secret = os.getenv('STRAVA_CLIENT_SECRET')
 
-    url = 'https://www.strava.com/api/v3/athlete/activities'
-    headers = {'Authorization': f'Bearer {token}'}
+    if not client_id or not client_secret:
+        print('Skipping Strava sync: STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET not set')
+        return {}
 
     try:
+        # Refresh the access token
+        token_url = 'https://www.strava.com/api/v3/oauth/token'
+        token_params = {
+            'client_id': client_id,
+            'client_secret': client_secret,
+            'refresh_token': refresh_token,
+            'grant_type': 'refresh_token'
+        }
+        token_response = requests.post(token_url, params=token_params)
+        token_response.raise_for_status()
+        access_token = token_response.json()['access_token']
+
+        # Fetch activities with fresh access token
+        weeks = 12
+        after = int((datetime.now() - timedelta(days=weeks*7)).timestamp())
+
+        url = 'https://www.strava.com/api/v3/athlete/activities'
+        headers = {'Authorization': f'Bearer {access_token}'}
+
         params = {'after': after, 'per_page': 200}
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
@@ -102,9 +122,9 @@ def main():
         data['github'] = sync_github(github_username, github_token)
 
     # Strava sync
-    strava_token = os.getenv('STRAVA_TOKEN')
-    if strava_token:
-        data['strava'] = sync_strava(strava_token)
+    strava_refresh_token = os.getenv('STRAVA_REFRESH_TOKEN')
+    if strava_refresh_token:
+        data['strava'] = sync_strava(strava_refresh_token)
 
     save_activities(data)
     print('Sync complete.')

@@ -28,24 +28,9 @@ Add these to your repo secrets (Settings → Secrets and variables → Actions):
   - Generate at: https://github.com/settings/tokens/new
 
 #### Strava (Optional)
-- `STRAVA_TOKEN` - Strava API refresh token
-  - Go to: https://www.strava.com/settings/apps
-  - Create an app with any name
-  - Note your **Client ID** and **Client Secret**
-  - Visit this URL in your browser (replace with your IDs):
-    ```
-    https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read
-    ```
-  - You'll get a code in the redirect URL
-  - Exchange it for a token using curl:
-    ```bash
-    curl -X POST https://www.strava.com/api/v3/oauth/token \
-      -d client_id=YOUR_CLIENT_ID \
-      -d client_secret=YOUR_CLIENT_SECRET \
-      -d code=YOUR_CODE \
-      -d grant_type=authorization_code
-    ```
-  - Use the `refresh_token` from the response
+- `STRAVA_CLIENT_ID` - From https://www.strava.com/settings/apps
+- `STRAVA_CLIENT_SECRET` - From https://www.strava.com/settings/apps
+- `STRAVA_REFRESH_TOKEN` - Generated via OAuth flow (see below)
 
 ### 3. Run Initial Sync
 
@@ -53,12 +38,19 @@ Go to **Actions → Sync Activity Data → Run workflow**
 
 ## Setting Up Strava Sync
 
-### Quick Start
-1. Go to https://www.strava.com/settings/apps and create a new app
-2. Note your **Client ID** and **Client Secret**
-3. Authorize your app at: `https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read`
-4. Extract the `code` from the redirect URL
-5. Get your refresh token:
+### Step 1: Create a Strava App
+1. Go to https://www.strava.com/settings/apps
+2. Create a new app (fill in any name/description)
+3. Save your **Client ID** and **Client Secret**
+
+### Step 2: Get Refresh Token
+1. Visit this URL (replace with your Client ID):
+   ```
+   https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read
+   ```
+2. Authorize the app - you'll be redirected to `http://localhost?code=XXXXXX`
+3. Extract the `code` from the URL
+4. Exchange it for tokens:
    ```bash
    curl -X POST https://www.strava.com/api/v3/oauth/token \
      -d client_id=YOUR_CLIENT_ID \
@@ -66,7 +58,15 @@ Go to **Actions → Sync Activity Data → Run workflow**
      -d code=YOUR_CODE \
      -d grant_type=authorization_code
    ```
-6. Add the `refresh_token` from the response as `STRAVA_TOKEN` secret in your repo
+5. Copy the `refresh_token` from the response
+
+### Step 3: Add to Repository Secrets
+Add these three secrets to your repo (Settings → Secrets and variables → Actions):
+- `STRAVA_CLIENT_ID` - Your app's Client ID
+- `STRAVA_CLIENT_SECRET` - Your app's Client Secret
+- `STRAVA_REFRESH_TOKEN` - The refresh token from step 2
+
+The sync script will use these to automatically get a fresh access token on each run.
 
 ### What Gets Synced
 - **GitHub**: Commit count per day (past 12 weeks)

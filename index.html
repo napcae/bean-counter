@@ -204,9 +204,15 @@
             <h3 class="font-semibold mb-2">Strava Syncing (Optional)</h3>
             <ol class="list-decimal list-inside space-y-1 opacity-70 text-xs">
               <li>Create an app at <a href="https://www.strava.com/settings/apps" target="_blank" class="link link-primary">strava.com/settings/apps</a></li>
-              <li>Authorize it: <code class="bg-base-300 px-1 rounded text-xs break-all">https://www.strava.com/oauth/authorize?client_id=YOUR_ID&response_type=code&redirect_uri=http://localhost&scope=activity:read</code></li>
-              <li>Exchange the code for a refresh token</li>
-              <li>Add <code class="bg-base-300 px-1 rounded">STRAVA_TOKEN</code> to your repo secrets</li>
+              <li>Note your <strong>Client ID</strong> and <strong>Client Secret</strong></li>
+              <li>Get a refresh token via OAuth (see README for details)</li>
+              <li>Add these 3 secrets to your repo:
+                <ul class="list-disc list-inside ml-2">
+                  <li><code class="bg-base-300 px-1 rounded">STRAVA_CLIENT_ID</code></li>
+                  <li><code class="bg-base-300 px-1 rounded">STRAVA_CLIENT_SECRET</code></li>
+                  <li><code class="bg-base-300 px-1 rounded">STRAVA_REFRESH_TOKEN</code></li>
+                </ul>
+              </li>
             </ol>
           </div>
           <p class="text-xs opacity-60 pt-2">Data syncs daily via GitHub Actions. See README for detailed instructions.</p>
