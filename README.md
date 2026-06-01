@@ -41,32 +41,42 @@ Go to **Actions → Sync Activity Data → Run workflow**
 ### Step 1: Create a Strava App
 1. Go to https://www.strava.com/settings/apps
 2. Create a new app (fill in any name/description)
-3. Save your **Client ID** and **Client Secret**
+3. Copy your **Client ID** and **Client Secret** to a safe place
 
 ### Step 2: Get Refresh Token
-1. Visit this URL (replace with your Client ID):
-   ```
-   https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read
-   ```
-2. Authorize the app - you'll be redirected to `http://localhost?code=XXXXXX`
-3. Extract the `code` from the URL
-4. Exchange it for tokens:
+Strava requires OAuth to get a refresh token. Use this script:
+
+1. Save this as `get_strava_token.sh` and run it:
    ```bash
+   #!/bin/bash
+   CLIENT_ID="YOUR_CLIENT_ID"
+   
+   # Step A: Visit this URL in your browser
+   echo "Visit this URL and authorize:"
+   echo "https://www.strava.com/oauth/authorize?client_id=$CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read_all"
+   
+   # Step B: Paste the code from the redirect URL
+   read -p "Paste the CODE from the URL: " CODE
+   
+   # Step C: Exchange code for tokens
+   CLIENT_SECRET="YOUR_CLIENT_SECRET"
    curl -X POST https://www.strava.com/api/v3/oauth/token \
-     -d client_id=YOUR_CLIENT_ID \
-     -d client_secret=YOUR_CLIENT_SECRET \
-     -d code=YOUR_CODE \
+     -d client_id=$CLIENT_ID \
+     -d client_secret=$CLIENT_SECRET \
+     -d code=$CODE \
      -d grant_type=authorization_code
    ```
-5. Copy the `refresh_token` from the response
+
+2. Replace `YOUR_CLIENT_ID` and `YOUR_CLIENT_SECRET` with values from step 1
+3. Run the script and copy the `refresh_token` from the output
 
 ### Step 3: Add to Repository Secrets
-Add these three secrets to your repo (Settings → Secrets and variables → Actions):
-- `STRAVA_CLIENT_ID` - Your app's Client ID
-- `STRAVA_CLIENT_SECRET` - Your app's Client Secret
-- `STRAVA_REFRESH_TOKEN` - The refresh token from step 2
+Add these to your repo (Settings → Secrets and variables → Actions):
+- `STRAVA_CLIENT_ID`
+- `STRAVA_CLIENT_SECRET`  
+- `STRAVA_REFRESH_TOKEN`
 
-The sync script will use these to automatically get a fresh access token on each run.
+The sync script will use these to automatically refresh your access token on each run.
 
 ### What Gets Synced
 - **GitHub**: Commit count per day (past 12 weeks)
