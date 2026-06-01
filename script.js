@@ -76,38 +76,41 @@ function getTotalCount(data) {
 }
 
 function renderHeatmap(data, activityName) {
-  const container = document.createElement('div');
-  container.className = 'activity-card';
-
   const currentStreak = getCurrentStreak(data);
   const longestStreak = getLongestStreak(data);
   const totalCount = getTotalCount(data);
 
+  const card = document.createElement('div');
+  card.className = 'card bg-base-200';
+
+  const body = document.createElement('div');
+  body.className = 'card-body p-4 md:p-6';
+
   const title = document.createElement('div');
-  title.className = 'activity-title';
+  title.className = 'flex items-center justify-between mb-4';
   title.innerHTML = `
-    <span>${activityName}</span>
-    ${currentStreak > 0 ? `<span class="streak">${currentStreak} day streak 🔥</span>` : ''}
+    <h2 class="card-title text-lg md:text-xl">${activityName}</h2>
+    ${currentStreak > 0 ? `<div class="badge badge-warning gap-1"><span>🔥</span><span>${currentStreak}d</span></div>` : ''}
   `;
-  container.appendChild(title);
+  body.appendChild(title);
 
   const stats = document.createElement('div');
-  stats.className = 'activity-stats';
+  stats.className = 'grid grid-cols-3 gap-4 mb-4';
   stats.innerHTML = `
-    <div class="stat-item">
-      <span class="stat-label">Total</span>
-      <span class="stat-value">${totalCount}</span>
+    <div class="stat place-items-center">
+      <div class="stat-title text-xs md:text-sm">Total</div>
+      <div class="stat-value text-lg md:text-2xl">${totalCount}</div>
     </div>
-    <div class="stat-item">
-      <span class="stat-label">Current</span>
-      <span class="stat-value">${currentStreak}d</span>
+    <div class="stat place-items-center">
+      <div class="stat-title text-xs md:text-sm">Current</div>
+      <div class="stat-value text-lg md:text-2xl">${currentStreak}d</div>
     </div>
-    <div class="stat-item">
-      <span class="stat-label">Best</span>
-      <span class="stat-value">${longestStreak}d</span>
+    <div class="stat place-items-center">
+      <div class="stat-title text-xs md:text-sm">Best</div>
+      <div class="stat-value text-lg md:text-2xl">${longestStreak}d</div>
     </div>
   `;
-  container.appendChild(stats);
+  body.appendChild(stats);
 
   const grid = document.createElement('div');
   grid.className = 'heatmap-grid';
@@ -121,15 +124,16 @@ function renderHeatmap(data, activityName) {
 
     const cell = document.createElement('div');
     cell.className = `heatmap-cell level-${level}`;
-    cell.title = `${dateStr}: ${count} activity`;
+    cell.title = `${dateStr}: ${count} ${activityName.toLowerCase()}`;
     cell.setAttribute('data-date', dateStr);
     cell.setAttribute('data-count', count);
 
     grid.appendChild(cell);
   }
 
-  container.appendChild(grid);
-  return container;
+  body.appendChild(grid);
+  card.appendChild(body);
+  return card;
 }
 
 async function init() {
@@ -146,32 +150,30 @@ async function init() {
 
   if (!activities.github || Object.keys(activities.github).length === 0) {
     const placeholder = document.createElement('div');
-    placeholder.className = 'activity-card';
-    placeholder.innerHTML = '<p style="color: var(--text-secondary); text-align: center;">No data yet. Syncing will happen daily.</p>';
+    placeholder.className = 'card bg-base-200';
+    placeholder.innerHTML = '<div class="card-body text-center"><p class="text-base-content/60">No data yet. Syncing will happen daily.</p></div>';
     container.appendChild(placeholder);
   }
 }
 
 function toggleTheme() {
   const html = document.documentElement;
-  const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  const currentTheme = html.getAttribute('data-theme');
+  const newTheme = currentTheme === 'solarized-dark' ? 'solarized-light' : 'solarized-dark';
 
-  html.classList.remove(currentTheme);
-  html.classList.add(newTheme);
-
+  html.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
   updateThemeIcon(newTheme);
 }
 
 function updateThemeIcon(theme) {
   const icon = document.getElementById('theme-icon');
-  icon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  icon.textContent = theme === 'solarized-dark' ? '☀️' : '🌙';
 }
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'dark';
-  document.documentElement.classList.add(savedTheme);
+  const savedTheme = localStorage.getItem('theme') || 'solarized-dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
   updateThemeIcon(savedTheme);
 }
 
