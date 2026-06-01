@@ -75,6 +75,24 @@ function getTotalCount(data) {
   return Object.values(data).reduce((sum, count) => sum + (count || 0), 0);
 }
 
+function getMonthLabels(weeks) {
+  const labels = [];
+  const dates = getDateRange(weeks);
+  let currentMonth = -1;
+
+  for (let i = 0; i < weeks; i++) {
+    const weekStart = dates[i * 7];
+    const month = weekStart.getMonth();
+    if (month !== currentMonth) {
+      currentMonth = month;
+      labels.push(weekStart.toLocaleDateString('en-US', { month: 'short' }));
+    } else {
+      labels.push('');
+    }
+  }
+  return labels;
+}
+
 function renderHeatmap(data, activityName) {
   const currentStreak = getCurrentStreak(data);
   const longestStreak = getLongestStreak(data);
@@ -112,28 +130,99 @@ function renderHeatmap(data, activityName) {
   `;
   body.appendChild(stats);
 
+  const dates = getDateRange(WEEKS);
+  const monthLabels = getMonthLabels(WEEKS);
+
+  const container = document.createElement('div');
+  container.className = 'heatmap-container';
+
+  const axisY = document.createElement('div');
+  axisY.className = 'heatmap-axis-y';
+  const weekdays = ['Mon', 'Wed', 'Fri'];
+  for (const weekday of weekdays) {
+    const label = document.createElement('div');
+    label.className = 'weekday-label text-xs opacity-70';
+    label.textContent = weekday;
+    axisY.appendChild(label);
+  }
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'heatmap-wrapper';
+
+  const axisX = document.createElement('div');
+  axisX.className = 'heatmap-axis-x';
+  for (const month of monthLabels) {
+    const label = document.createElement('div');
+    label.className = 'month-label text-xs opacity-70';
+    label.textContent = month;
+    axisX.appendChild(label);
+  }
+
   const grid = document.createElement('div');
   grid.className = 'heatmap-grid';
 
-  const dates = getDateRange(WEEKS);
+  for (let dayOfWeek = 0; dayOfWeek < DAYS_PER_WEEK; dayOfWeek++) {
+    const row = document.createElement('div');
+    row.className = 'heatmap-row';
 
-  for (const date of dates) {
-    const dateStr = formatDate(date);
-    const count = data[dateStr] || 0;
-    const level = getIntensityLevel(count);
+    for (let week = 0; week < WEEKS; week++) {
+      const dateIndex = week * DAYS_PER_WEEK + dayOfWeek;
+      const date = dates[dateIndex];
+      const dateStr = formatDate(date);
+      const count = data[dateStr] || 0;
+      const level = getIntensityLevel(count);
 
-    const cell = document.createElement('div');
-    cell.className = `heatmap-cell level-${level}`;
-    cell.title = `${dateStr}: ${count} ${activityName.toLowerCase()}`;
-    cell.setAttribute('data-date', dateStr);
-    cell.setAttribute('data-count', count);
+      const cell = document.createElement('div');
+      cell.className = `heatmap-cell level-${level}`;
+      cell.setAttribute('data-date', dateStr);
+      cell.setAttribute('data-count', count);
+      cell.setAttribute('data-activity', activityName);
 
-    grid.appendChild(cell);
+      cell.addEventListener('click', showTooltip);
+      cell.addEventListener('mousemove', updateTooltipPosition);
+
+      row.appendChild(cell);
+    }
+    grid.appendChild(row);
   }
 
-  body.appendChild(grid);
+  wrapper.appendChild(axisX);
+  wrapper.appendChild(grid);
+  container.appendChild(axisY);
+  container.appendChild(wrapper);
+
+  body.appendChild(container);
   card.appendChild(body);
   return card;
+}
+
+let currentTooltip = null;
+
+function showTooltip(event) {
+  const cell = event.currentTarget;
+  const date = cell.getAttribute('data-date');
+  const count = cell.getAttribute('data-count');
+  const activity = cell.getAttribute('data-activity');
+
+  if (currentTooltip) {
+    currentTooltip.remove();
+  }
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'heatmap-tooltip';
+  tooltip.textContent = `${date}: ${count} ${activity.toLowerCase()}`;
+  document.body.appendChild(tooltip);
+  currentTooltip = tooltip;
+
+  updateTooltipPosition.call(cell, event);
+}
+
+function updateTooltipPosition(event) {
+  if (!currentTooltip) return;
+
+  const rect = this.getBoundingClientRect();
+  currentTooltip.style.left = (rect.left + rect.width / 2 - currentTooltip.offsetWidth / 2) + 'px';
+  currentTooltip.style.top = (rect.top - currentTooltip.offsetHeight - 8) + 'px';
 }
 
 async function init() {
@@ -172,10 +261,23 @@ function updateThemeIcon(theme) {
 }
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('theme') || 'solarized-dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  updateThemeIcon(savedTheme);
+  let theme = localStorage.getItem('theme');
+
+  if (!theme) {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    theme = prefersDark ? 'solarized-dark' : 'solarized-light';
+  }
+
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeIcon(theme);
 }
+
+document.addEventListener('click', (e) => {
+  if (!e.target.classList.contains('heatmap-cell') && currentTooltip) {
+    currentTooltip.remove();
+    currentTooltip = null;
+  }
+});
 
 initTheme();
 init();

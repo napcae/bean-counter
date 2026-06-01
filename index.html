@@ -7,16 +7,63 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.min.css" rel="stylesheet" type="text/css" />
   <style>
-    .heatmap-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(12px, 1fr));
+    .heatmap-container {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .heatmap-axis-y {
+      display: flex;
+      flex-direction: column;
       gap: 2px;
-      width: 100%;
-      max-width: 500px;
+      justify-content: flex-start;
+      padding-top: 20px;
+    }
+
+    .weekday-label {
+      width: 24px;
+      height: 14px;
+      font-size: 10px;
+      text-align: center;
+      line-height: 14px;
+    }
+
+    .heatmap-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .heatmap-axis-x {
+      display: flex;
+      gap: 2px;
+      margin-left: 24px;
+    }
+
+    .month-label {
+      flex: 0 0 90px;
+      font-size: 11px;
+      text-align: center;
+      height: 16px;
+      line-height: 16px;
+    }
+
+    .heatmap-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      width: fit-content;
+    }
+
+    .heatmap-row {
+      display: flex;
+      gap: 2px;
     }
 
     .heatmap-cell {
-      aspect-ratio: 1;
+      width: 12px;
+      height: 12px;
       border-radius: 2px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -25,6 +72,7 @@
     .heatmap-cell:hover {
       transform: scale(1.2);
       filter: brightness(1.2);
+      z-index: 10;
     }
 
     .heatmap-cell.level-0 {
@@ -48,6 +96,25 @@
 
     .heatmap-cell.level-4 {
       background-color: #c2410c;
+    }
+
+    .heatmap-tooltip {
+      position: fixed;
+      background-color: #1f2937;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      z-index: 1000;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    html[data-theme="solarized-light"] .heatmap-tooltip {
+      background-color: #fdf6e3;
+      color: #073642;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
   </style>
 </head>
