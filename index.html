@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="solarized-dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bean Counter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.20/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <style>
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(12px, 1fr));
+      gap: 2px;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    .heatmap-cell {
+      aspect-ratio: 1;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .heatmap-cell:hover {
+      transform: scale(1.2);
+      filter: brightness(1.2);
+    }
+
+    .heatmap-cell.level-0 {
+      @apply bg-base-300;
+    }
+
+    .heatmap-cell.level-1 {
+      @apply bg-orange-400;
+      opacity: 0.4;
+    }
+
+    .heatmap-cell.level-2 {
+      @apply bg-orange-500;
+      opacity: 0.6;
+    }
+
+    .heatmap-cell.level-3 {
+      @apply bg-orange-600;
+      opacity: 0.8;
+    }
+
+    .heatmap-cell.level-4 {
+      @apply bg-orange-700;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen">
+    <div class="max-w-2xl mx-auto p-4 md:p-6">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h1 class="text-3xl font-bold">Bean Counter</h1>
+          <p class="text-base-content/60">Your consistency streak</p>
+        </div>
+        <button
+          class="btn btn-circle btn-sm md:btn-md"
+          onclick="toggleTheme()"
+          title="Toggle theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+
+      <div id="activities-container" class="space-y-6"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

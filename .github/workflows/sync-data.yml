@@ -1,0 +1,41 @@
+name: Sync Activity Data
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run daily at 2 AM UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Sync GitHub data
+        env:
+          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
+          STRAVA_TOKEN: ${{ secrets.STRAVA_TOKEN }}
+        run: python sync.py
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "Bean Counter Bot"
+          git add data/activities.json
+          if git diff --quiet --cached; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: sync activity data"
+            git push origin HEAD:${{ github.ref }}
+          fi
