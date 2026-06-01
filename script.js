@@ -208,16 +208,27 @@ let currentTooltip = null;
 function showTooltip(event) {
   const cell = event.currentTarget;
   const date = cell.getAttribute('data-date');
-  const count = cell.getAttribute('data-count');
+  const count = parseInt(cell.getAttribute('data-count'));
   const activity = cell.getAttribute('data-activity');
 
   if (currentTooltip) {
     currentTooltip.remove();
   }
 
+  const dateObj = new Date(date + 'T00:00:00');
+  const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  let activityType = 'contributions';
+  if (activity === 'Strava') {
+    activityType = 'activities';
+  }
+
+  const label = count === 1 ? activityType.slice(0, -1) : activityType;
+  const tooltipText = `${count} ${label} on ${formattedDate}`;
+
   const tooltip = document.createElement('div');
   tooltip.className = 'heatmap-tooltip';
-  tooltip.textContent = `${date}: ${count} ${activity.toLowerCase()}`;
+  tooltip.textContent = tooltipText;
   document.body.appendChild(tooltip);
   currentTooltip = tooltip;
 
