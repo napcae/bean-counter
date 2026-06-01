@@ -1,15 +1,4 @@
-const WEEKS = {
-  mobile: 4,
-  tablet: 8,
-  desktop: 12
-};
-
-function getWeeksForScreen() {
-  const width = window.innerWidth;
-  if (width < 640) return WEEKS.mobile;
-  if (width < 1024) return WEEKS.tablet;
-  return WEEKS.desktop;
-}
+const WEEKS = 52;
 
 const DAYS_PER_WEEK = 7;
 
@@ -109,7 +98,7 @@ function renderHeatmap(data, activityName) {
   const currentStreak = getCurrentStreak(data);
   const longestStreak = getLongestStreak(data);
   const totalCount = getTotalCount(data);
-  const weeks = getWeeksForScreen();
+  const weeks = WEEKS;
 
   const card = document.createElement('div');
   card.className = 'card bg-base-200';
@@ -294,17 +283,3 @@ document.addEventListener('click', (e) => {
 
 initTheme();
 init();
-
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    const oldWeeks = getWeeksForScreen();
-    setTimeout(() => {
-      const newWeeks = getWeeksForScreen();
-      if (oldWeeks !== newWeeks) {
-        location.reload();
-      }
-    }, 0);
-  }, 250);
-});
