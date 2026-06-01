@@ -21,9 +21,17 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
+      - name: Get GitHub username
+        id: get_user
+        env:
+          GH_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
+        run: |
+          USERNAME=$(gh api user --jq '.login')
+          echo "username=$USERNAME" >> $GITHUB_OUTPUT
+
       - name: Sync Activity Data
         env:
-          GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+          GITHUB_USERNAME: ${{ steps.get_user.outputs.username }}
           GITHUB_TOKEN: ${{ secrets.GH_SYNC_TOKEN }}
           STRAVA_CLIENT_ID: ${{ secrets.STRAVA_CLIENT_ID }}
           STRAVA_CLIENT_SECRET: ${{ secrets.STRAVA_CLIENT_SECRET }}
