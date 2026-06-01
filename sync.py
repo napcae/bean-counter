@@ -41,7 +41,10 @@ def sync_github(username, token):
 
     params = {'q': query, 'per_page': 100, 'sort': 'committer-date'}
     response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f'GitHub API request failed with status {response.status_code}: {e}')
 
     commits = response.json().get('items', [])
 
@@ -74,9 +77,17 @@ def sync_strava(refresh_token):
         'refresh_token': refresh_token,
         'grant_type': 'refresh_token'
     }
-    token_response = requests.post(token_url, data=token_params)
-    token_response.raise_for_status()
-    access_token = token_response.json()['access_token']
+    try:
+        token_response = requests.post(token_url, data=token_params)
+        token_response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f'Failed to refresh Strava token: {e}')
+
+    token_data = token_response.json()
+    if 'access_token' not in token_data:
+        raise RuntimeError(f'Strava token response missing access_token: {token_data}')
+
+    access_token = token_data['access_token']
 
     # Fetch activities with fresh access token
     weeks = 12
@@ -87,7 +98,10 @@ def sync_strava(refresh_token):
 
     params = {'after': after, 'per_page': 200}
     response = requests.get(url, headers=headers, params=params)
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise RuntimeError(f'Strava API request failed with status {response.status_code}: {e}')
 
     strava_activities = response.json()
 
