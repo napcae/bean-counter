@@ -46,7 +46,7 @@ Go to **Actions → Sync Activity Data → Run workflow**
 ### Step 2: Get Refresh Token
 1. Visit this URL (replace with your Client ID):
    ```
-   https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read
+   https://www.strava.com/oauth/authorize?client_id=YOUR_CLIENT_ID&response_type=code&redirect_uri=http://localhost&approval_prompt=force&scope=activity:read_all
    ```
 2. Authorize the app - you'll be redirected to `http://localhost?code=XXXXXX`
 3. Extract the `code` from the URL
