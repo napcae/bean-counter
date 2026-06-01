@@ -140,8 +140,8 @@ function renderHeatmap(data, activityName) {
 
   const axisY = document.createElement('div');
   axisY.className = 'heatmap-axis-y';
-  const weekdays = ['Mon', 'Wed', 'Fri'];
-  for (const weekday of weekdays) {
+  const weekdayLabels = ['Mon', '', 'Wed', '', 'Fri', '', ''];
+  for (const weekday of weekdayLabels) {
     const label = document.createElement('div');
     label.className = 'weekday-label text-xs opacity-70';
     label.textContent = weekday;
@@ -195,6 +195,11 @@ function renderHeatmap(data, activityName) {
 
   body.appendChild(container);
   card.appendChild(body);
+
+  setTimeout(() => {
+    wrapper.scrollLeft = wrapper.scrollWidth - wrapper.offsetWidth;
+  }, 0);
+
   return card;
 }
 
