@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="solarized-dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,7 @@
       --tooltip-text: #ffffff;
     }
 
-    html[data-theme="solarized-light"] {
+    html[data-theme="light"] {
       --heatmap-empty: #d1d5db;
       --tooltip-bg: #f3f4f6;
       --tooltip-text: #1f2937;
@@ -82,16 +82,17 @@
     .heatmap-row {
       display: flex;
       gap: 3px;
+      align-items: center;
+      min-height: 20px;
     }
 
     .heatmap-cell {
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 2px;
       cursor: pointer;
       transition: all 0.15s ease;
-      flex: 1;
-      max-width: 12px;
+      flex-shrink: 0;
     }
 
     .heatmap-cell:active {
