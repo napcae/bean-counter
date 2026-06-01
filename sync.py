@@ -81,7 +81,7 @@ def sync_strava(refresh_token):
         token_response = requests.post(token_url, data=token_params)
         token_response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f'Failed to refresh Strava token: {e}')
+        raise RuntimeError(f'Failed to refresh Strava token: {e}. Response: {token_response.text}')
 
     token_data = token_response.json()
     if 'access_token' not in token_data:
