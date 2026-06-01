@@ -2,6 +2,7 @@
 """Sync GitHub and Strava activity data."""
 
 import os
+import sys
 import json
 import requests
 from datetime import datetime, timedelta
@@ -23,8 +24,7 @@ def save_activities(data):
 def sync_github(username, token):
     """Fetch GitHub contributions for the past 12 weeks."""
     if not username or not token:
-        print('Skipping GitHub sync: username or token not set')
-        return {}
+        raise ValueError('GitHub username or token not configured')
 
     activities = {}
 
@@ -39,29 +39,24 @@ def sync_github(username, token):
     query = f'author:{username} committer-date:>={start_date.strftime("%Y-%m-%d")}'
     url = 'https://api.github.com/search/commits'
 
-    try:
-        params = {'q': query, 'per_page': 100, 'sort': 'committer-date'}
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+    params = {'q': query, 'per_page': 100, 'sort': 'committer-date'}
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
 
-        commits = response.json().get('items', [])
+    commits = response.json().get('items', [])
 
-        # Count commits by date
-        for commit in commits:
-            commit_date = commit['commit']['committer']['date'].split('T')[0]
-            activities[commit_date] = activities.get(commit_date, 0) + 1
+    # Count commits by date
+    for commit in commits:
+        commit_date = commit['commit']['committer']['date'].split('T')[0]
+        activities[commit_date] = activities.get(commit_date, 0) + 1
 
-        print(f'GitHub: synced {len(commits)} commits')
-    except Exception as e:
-        print(f'GitHub sync failed: {e}')
-
+    print(f'GitHub: synced {len(commits)} commits')
     return activities
 
 def sync_strava(refresh_token):
     """Fetch Strava activities for the past 12 weeks."""
     if not refresh_token:
-        print('Skipping Strava sync: refresh token not set')
-        return {}
+        raise ValueError('Strava refresh token not configured')
 
     activities = {}
 
@@ -69,44 +64,39 @@ def sync_strava(refresh_token):
     client_secret = os.getenv('STRAVA_CLIENT_SECRET')
 
     if not client_id or not client_secret:
-        print('Skipping Strava sync: STRAVA_CLIENT_ID or STRAVA_CLIENT_SECRET not set')
-        return {}
+        raise ValueError('Strava client credentials not configured')
 
-    try:
-        # Refresh the access token
-        token_url = 'https://www.strava.com/api/v3/oauth/token'
-        token_params = {
-            'client_id': client_id,
-            'client_secret': client_secret,
-            'refresh_token': refresh_token,
-            'grant_type': 'refresh_token'
-        }
-        token_response = requests.post(token_url, data=token_params)
-        token_response.raise_for_status()
-        access_token = token_response.json()['access_token']
+    # Refresh the access token
+    token_url = 'https://www.strava.com/api/v3/oauth/token'
+    token_params = {
+        'client_id': client_id,
+        'client_secret': client_secret,
+        'refresh_token': refresh_token,
+        'grant_type': 'refresh_token'
+    }
+    token_response = requests.post(token_url, data=token_params)
+    token_response.raise_for_status()
+    access_token = token_response.json()['access_token']
 
-        # Fetch activities with fresh access token
-        weeks = 12
-        after = int((datetime.now() - timedelta(days=weeks*7)).timestamp())
+    # Fetch activities with fresh access token
+    weeks = 12
+    after = int((datetime.now() - timedelta(days=weeks*7)).timestamp())
 
-        url = 'https://www.strava.com/api/v3/athlete/activities'
-        headers = {'Authorization': f'Bearer {access_token}'}
+    url = 'https://www.strava.com/api/v3/athlete/activities'
+    headers = {'Authorization': f'Bearer {access_token}'}
 
-        params = {'after': after, 'per_page': 200}
-        response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+    params = {'after': after, 'per_page': 200}
+    response = requests.get(url, headers=headers, params=params)
+    response.raise_for_status()
 
-        strava_activities = response.json()
+    strava_activities = response.json()
 
-        # Count activities by date
-        for activity in strava_activities:
-            activity_date = activity['start_date'].split('T')[0]
-            activities[activity_date] = activities.get(activity_date, 0) + 1
+    # Count activities by date
+    for activity in strava_activities:
+        activity_date = activity['start_date'].split('T')[0]
+        activities[activity_date] = activities.get(activity_date, 0) + 1
 
-        print(f'Strava: synced {len(strava_activities)} activities')
-    except Exception as e:
-        print(f'Strava sync failed: {e}')
-
+    print(f'Strava: synced {len(strava_activities)} activities')
     return activities
 
 def main():
@@ -114,20 +104,38 @@ def main():
     print('Starting sync...')
 
     data = load_activities()
+    sync_failed = False
 
     # GitHub sync
     github_username = os.getenv('GITHUB_USERNAME')
     github_token = os.getenv('GITHUB_TOKEN')
     if github_username and github_token:
-        data['github'] = sync_github(github_username, github_token)
+        try:
+            data['github'] = sync_github(github_username, github_token)
+        except Exception as e:
+            print(f'Fatal: GitHub sync failed with error: {e}')
+            sync_failed = True
+    else:
+        print('Skipping GitHub sync: credentials not configured')
 
     # Strava sync
     strava_refresh_token = os.getenv('STRAVA_REFRESH_TOKEN')
     if strava_refresh_token:
-        data['strava'] = sync_strava(strava_refresh_token)
+        try:
+            data['strava'] = sync_strava(strava_refresh_token)
+        except Exception as e:
+            print(f'Fatal: Strava sync failed with error: {e}')
+            sync_failed = True
+    else:
+        print('Skipping Strava sync: refresh token not configured')
 
-    save_activities(data)
-    print('Sync complete.')
+    if not sync_failed:
+        save_activities(data)
+        print('Sync complete.')
+        return 0
+    else:
+        print('Sync failed: one or more sources had errors.')
+        return 1
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
