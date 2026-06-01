@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="solarized-dark">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -17,7 +17,7 @@
       --tooltip-text: #ffffff;
     }
 
-    html[data-theme="solarized-light"] {
+    html[data-theme="light"] {
       --heatmap-empty: #d1d5db;
       --tooltip-bg: #f3f4f6;
       --tooltip-text: #1f2937;
@@ -32,18 +32,20 @@
     .heatmap-axis-y {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       justify-content: flex-start;
-      padding-top: 24px;
+      padding-top: 42px;
       flex-shrink: 0;
     }
 
     .weekday-label {
-      width: 24px;
-      height: 12px;
-      font-size: 10px;
+      width: 32px;
+      flex: 1;
+      font-size: 11px;
       text-align: center;
-      line-height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-weight: 400;
       opacity: 0.6;
     }
@@ -75,23 +77,23 @@
     .heatmap-grid {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
       width: 100%;
     }
 
     .heatmap-row {
       display: flex;
-      gap: 3px;
+      gap: 2px;
+      align-items: stretch;
     }
 
     .heatmap-cell {
-      width: 12px;
-      height: 12px;
+      aspect-ratio: 1;
       border-radius: 2px;
       cursor: pointer;
       transition: all 0.15s ease;
       flex: 1;
-      max-width: 12px;
+      min-width: 0;
     }
 
     .heatmap-cell:active {

@@ -261,7 +261,7 @@ async function init() {
 function toggleTheme() {
   const html = document.documentElement;
   const currentTheme = html.getAttribute('data-theme');
-  const newTheme = currentTheme === 'solarized-dark' ? 'solarized-light' : 'solarized-dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
   html.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
@@ -270,7 +270,7 @@ function toggleTheme() {
 
 function updateThemeIcon(theme) {
   const icon = document.getElementById('theme-icon');
-  icon.textContent = theme === 'solarized-dark' ? '☀️' : '🌙';
+  icon.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 function initTheme() {
@@ -278,7 +278,7 @@ function initTheme() {
 
   if (!theme) {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    theme = prefersDark ? 'solarized-dark' : 'solarized-light';
+    theme = prefersDark ? 'dark' : 'light';
   }
 
   document.documentElement.setAttribute('data-theme', theme);
