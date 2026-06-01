@@ -42,7 +42,7 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "Bean Counter Bot"
-          git add data/activities.json
+          git add data/activities.json data/.strava-token.json
           if git diff --quiet --cached; then
             echo "No changes to commit"
           else

@@ -8,6 +8,7 @@ import requests
 from datetime import datetime, timedelta
 
 DATA_FILE = 'data/activities.json'
+STRAVA_TOKEN_FILE = 'data/.strava-token.json'
 
 def load_activities():
     """Load existing activity data."""
@@ -15,6 +16,22 @@ def load_activities():
         with open(DATA_FILE, 'r') as f:
             return json.load(f)
     return {'github': {}, 'strava': {}}
+
+def load_strava_token():
+    """Load persisted Strava refresh token from file or environment."""
+    # Try file first (from previous sync)
+    if os.path.exists(STRAVA_TOKEN_FILE):
+        with open(STRAVA_TOKEN_FILE, 'r') as f:
+            data = json.load(f)
+            return data.get('refresh_token')
+    # Fall back to environment variable
+    return os.getenv('STRAVA_REFRESH_TOKEN')
+
+def save_strava_token(refresh_token):
+    """Persist new Strava refresh token to file."""
+    os.makedirs('data', exist_ok=True)
+    with open(STRAVA_TOKEN_FILE, 'w') as f:
+        json.dump({'refresh_token': refresh_token}, f)
 
 def save_activities(data):
     """Save activity data."""
@@ -89,6 +106,10 @@ def sync_strava(refresh_token):
 
     access_token = token_data['access_token']
 
+    # Save the new refresh token for next run
+    if 'refresh_token' in token_data:
+        save_strava_token(token_data['refresh_token'])
+
     # Fetch activities with fresh access token
     weeks = 12
     after = int((datetime.now() - timedelta(days=weeks*7)).timestamp())
@@ -133,7 +154,7 @@ def main():
         print('Skipping GitHub sync: credentials not configured')
 
     # Strava sync
-    strava_refresh_token = os.getenv('STRAVA_REFRESH_TOKEN')
+    strava_refresh_token = load_strava_token()
     if strava_refresh_token:
         try:
             data['strava'] = sync_strava(strava_refresh_token)
